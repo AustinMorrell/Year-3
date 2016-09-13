@@ -25,7 +25,7 @@ private:
 
 	struct Vertex {
 		glm::vec4 position;
-		glm::vec4 colour;
+		//glm::vec4 colour;
 	};
 
 	//vertex array object, vertex buffer object and index buffer object
