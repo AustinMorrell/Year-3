@@ -23,6 +23,7 @@ RenderingGeometryApplication::~RenderingGeometryApplication() {
 
 bool RenderingGeometryApplication::startup() {
 
+	Sphere();
 	// create a basic window
 	createWindow("AIE OpenGL Application", 1280, 720);
 
@@ -137,6 +138,18 @@ bool RenderingGeometryApplication::startup() {
 	// we don't need to keep the individual shaders around
 	glDeleteShader(fragmentShader);
 	glDeleteShader(vertexShader);
+
+	return true;
+}
+
+bool RenderingGeometryApplication::Sphere()
+{
+	createWindow("MakingASphere", 1280, 720);
+
+	m_camera = new Camera(glm::pi<float>() * 0.25f, 16 / 9.f, 0.1f, 1000.f);
+	m_camera->setLookAtFrom(vec3(10, 10, 10), vec3(0));
+
+
 
 	return true;
 }

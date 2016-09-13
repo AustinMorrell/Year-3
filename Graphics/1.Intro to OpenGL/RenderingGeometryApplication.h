@@ -13,6 +13,7 @@ public:
 	RenderingGeometryApplication();
 	virtual ~RenderingGeometryApplication();
 
+	virtual bool Sphere();
 	virtual bool startup();
 	virtual void shutdown();
 
