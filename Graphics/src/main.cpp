@@ -1,9 +1,9 @@
 #include <BaseApplication.h>
-#include <SolarSystemApplication.h>
+#include <RenderingGeometryApplication.h>
 
 int main() 
 {	
-	BaseApplication * app = new SolarSystemApplication();
+	BaseApplication * app = new RenderingGeometryApplication();
 	if (app->startup())
 		app->run();
 	app->shutdown();
