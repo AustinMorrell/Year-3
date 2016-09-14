@@ -24,76 +24,6 @@ RenderingGeometryApplication::~RenderingGeometryApplication() {
 bool RenderingGeometryApplication::startup() {
 
 	Sphere();
-	// create a basic window
-	createWindow("AIE OpenGL Application", 1280, 720);
-
-	// start the gizmo system that can draw basic immediate-mode shapes
-	//Gizmos::create();
-
-	// setup camera
-	m_camera = new Camera(glm::pi<float>() * 0.25f, 16 / 9.f, 0.1f, 1000.f);
-	m_camera->setLookAtFrom(vec3(10, 10, 10), vec3(0));
-
-	// create vertex and index data for a quad
-	//Vertex vertices[4];
-
-	/*
-	2 -5,5 ___ 5,5 3
-	|\  |
-	| \ |
-	0-5,-5|__\|5,-5 1
-
-
-	*/
-	Vertex vertices[4]; 
-
-	vertices[0].position = vec4(-5, 0, -5, 1);
-	vertices[1].position = vec4(5, 0, -5, 1);
-	vertices[2].position = vec4(-5, 0, 5, 1);
-	vertices[3].position = vec4(5, 0, 5, 1);
-
-	//vertices[0].colour = vec4(1, 0, 0, 1);
-	//vertices[1].colour = vec4(0, 1, 0, 1);
-	//vertices[2].colour = vec4(0, 0, 1, 1);
-	//vertices[3].colour = vec4(1, 1, 1, 1);
-
-	unsigned int indices[4] = { 0,2,1,3 };
-
-	 
-	m_indexCount = 4;
-	// create opengl data
-
-	// generate buffers
-	glGenBuffers(1, &m_vbo);
-	glGenBuffers(1, &m_ibo);
-
-	// generate vertex array object (descriptors)
-	glGenVertexArrays(1, &m_vao);
-
-	// all changes will apply to this handle
-	glBindVertexArray(m_vao);
-
-	// set vertex buffer data
-	glBindBuffer(GL_ARRAY_BUFFER, m_vbo);
-	glBufferData(GL_ARRAY_BUFFER, 4 * sizeof(Vertex), vertices, GL_STATIC_DRAW);
-
-	// index data
-
-	glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, m_ibo);
-	glBufferData(GL_ELEMENT_ARRAY_BUFFER, 4 * sizeof(unsigned int), indices, GL_STATIC_DRAW);
-
-	// position
-	glEnableVertexAttribArray(0);
-	glVertexAttribPointer(0, 4, GL_FLOAT, GL_FALSE, 0,(void*)0);
-
-	//// colour
-	glEnableVertexAttribArray(1);
-	glVertexAttribPointer(1, 4, GL_FLOAT, GL_FALSE, 0,(void*)0);
-
-	// safety
-	glBindVertexArray(0);
-	glBindBuffer(GL_ARRAY_BUFFER, 0);
-	glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, 0);
 
 	// create shader
 	const char* vsSource = "#version 410\n \
@@ -142,6 +72,48 @@ bool RenderingGeometryApplication::startup() {
 	return true;
 }
 
+void RenderingGeometryApplication::createCube()
+{
+	createWindow("MakingASphere", 1280, 720);
+
+	m_camera = new Camera(glm::pi<float>() * 0.25f, 16 / 9.f, 0.1f, 1000.f);
+	m_camera->setLookAtFrom(vec3(10, 10, 10), vec3(0));
+
+	Vertex vertices[4];
+	unsigned int indices[4] = { 0,2,1,3 };
+
+	m_indexCount = 4;
+
+	vertices[0].position = glm::vec4(-2, 0, -2, 1);
+	vertices[1].position = glm::vec4(2, 0, -2, 1);
+	vertices[2].position = glm::vec4(-2, 0, 2, 1);
+	vertices[3].position = glm::vec4(2, 0, 2, 1);
+
+	/*vertices[0].color = glm::vec4(1, 0, 0, 1);
+	vertices[1].color = glm::vec4(0, 1, 0, 1);
+	vertices[2].color = glm::vec4(0, 0, 1, 1);
+	vertices[3].color = glm::vec4(1, 1, 1, 1);*/
+
+	glGenBuffers(1, &m_vbo);
+	glGenBuffers(1, &m_ibo);
+	glGenVertexArrays(1, &m_vao);
+	glBindVertexArray(m_vao);
+
+	glBindBuffer(GL_ARRAY_BUFFER, m_vbo);
+	glBufferData(GL_ARRAY_BUFFER, 4 * sizeof(Vertex), vertices, GL_STATIC_DRAW);
+	glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, m_ibo);
+	glBufferData(GL_ELEMENT_ARRAY_BUFFER, 4 * sizeof(unsigned int), indices, GL_STATIC_DRAW);
+
+	glEnableVertexAttribArray(0);
+	glVertexAttribPointer(0, 4, GL_FLOAT, GL_FALSE, sizeof(Vertex), 0);
+	glEnableVertexAttribArray(1);
+	glVertexAttribPointer(1, 4, GL_FLOAT, GL_FALSE, sizeof(Vertex), (void*)(sizeof(glm::vec4)));
+
+	glBindVertexArray(0);
+	glBindBuffer(GL_ARRAY_BUFFER, 0);
+	glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, 0);
+}
+
 bool RenderingGeometryApplication::Sphere()
 {
 	createWindow("MakingASphere", 1280, 720);
@@ -149,7 +121,41 @@ bool RenderingGeometryApplication::Sphere()
 	m_camera = new Camera(glm::pi<float>() * 0.25f, 16 / 9.f, 0.1f, 1000.f);
 	m_camera->setLookAtFrom(vec3(10, 10, 10), vec3(0));
 
+	Vertex vertices[6];
 
+	vertices[0].position = vec4(-5, 0, -5, 1);
+	vertices[1].position = vec4(5, 0, -5, 1);
+	vertices[2].position = vec4(-5, 0, 5, 1);
+	vertices[3].position = vec4(5, 0, 5, 1);
+	vertices[4].position = vec4(-1, 0, 1, 1);
+	vertices[5].position = vec4(1, 0, 1, 1);
+
+	unsigned int indices[6] = { 0,2,1,3,5,4 };
+
+	m_indexCount = 6;
+
+	glGenBuffers(1, &m_vbo);
+	glGenBuffers(1, &m_ibo);
+
+	glGenVertexArrays(1, &m_vao);
+
+	glBindVertexArray(m_vao);
+
+	glBindBuffer(GL_ARRAY_BUFFER, m_vbo);
+	glBufferData(GL_ARRAY_BUFFER, 6 * sizeof(Vertex), vertices, GL_STATIC_DRAW);
+
+	glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, m_ibo);
+	glBufferData(GL_ELEMENT_ARRAY_BUFFER, 6 * sizeof(unsigned int), indices, GL_STATIC_DRAW);
+
+	glEnableVertexAttribArray(0);
+	glVertexAttribPointer(0, 4, GL_FLOAT, GL_FALSE, 0, (void*)0);
+
+	glEnableVertexAttribArray(1);
+	glVertexAttribPointer(1, 4, GL_FLOAT, GL_FALSE, 0, (void*)0);
+
+	glBindVertexArray(0);
+	glBindBuffer(GL_ARRAY_BUFFER, 0);
+	glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, 0);
 
 	return true;
 }

@@ -14,6 +14,7 @@ public:
 	virtual ~RenderingGeometryApplication();
 
 	virtual bool Sphere();
+	virtual void createCube();
 	virtual bool startup();
 	virtual void shutdown();
 
