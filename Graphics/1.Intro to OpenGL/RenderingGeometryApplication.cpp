@@ -1,16 +1,4 @@
 #include "RenderingGeometryApplication.h"
-#include "gl_core_4_4.h"
-
-#include <GLFW/glfw3.h>
-#include <glm/glm.hpp>
-#include <glm/ext.hpp>
-#include <vector>
-#include "Camera.h"
-#include "Gizmos.h"
-
-using glm::vec3;
-using glm::vec4;
-using glm::mat4;
 
 RenderingGeometryApplication::RenderingGeometryApplication()
 	: m_camera(nullptr) {
@@ -23,7 +11,7 @@ RenderingGeometryApplication::~RenderingGeometryApplication() {
 
 bool RenderingGeometryApplication::startup() {
 
-	Sphere();
+	Sphere(5, 30, 30);
 
 	// create shader
 	const char* vsSource = "#version 410\n \
@@ -89,10 +77,10 @@ void RenderingGeometryApplication::createCube()
 	vertices[2].position = glm::vec4(-2, 0, 2, 1);
 	vertices[3].position = glm::vec4(2, 0, 2, 1);
 
-	/*vertices[0].color = glm::vec4(1, 0, 0, 1);
-	vertices[1].color = glm::vec4(0, 1, 0, 1);
-	vertices[2].color = glm::vec4(0, 0, 1, 1);
-	vertices[3].color = glm::vec4(1, 1, 1, 1);*/
+	vertices[0].colour = glm::vec4(1, 0, 0, 1);
+	vertices[1].colour = glm::vec4(0, 1, 0, 1);
+	vertices[2].colour = glm::vec4(0, 0, 1, 1);
+	vertices[3].colour = glm::vec4(1, 1, 1, 1);
 
 	glGenBuffers(1, &m_vbo);
 	glGenBuffers(1, &m_ibo);
@@ -114,44 +102,99 @@ void RenderingGeometryApplication::createCube()
 	glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, 0);
 }
 
-bool RenderingGeometryApplication::Sphere()
+RenderingGeometryApplication::Vertex* RenderingGeometryApplication::generateHalfSphereVertices(unsigned int np, const int &rad)
+{
+	RenderingGeometryApplication::Vertex* vertices = new RenderingGeometryApplication::Vertex[np];
+
+	for (int i = 0; i < np; i++)
+	{
+		float angle = PI * i / (np - 1);
+		//vertices[i].position = glm::vec4(rad * sin(angle), rad * cos(angle), 0, 1);
+		vertices[i].position = glm::vec4(rad * cos(angle), rad * sin(angle), 0, 1);
+	}
+	return vertices;
+}
+
+RenderingGeometryApplication::Vertex* RenderingGeometryApplication::generateSphereVertices(const unsigned int &sides, const unsigned int &mirid, Vertex* &halfSphere)
+{
+	int count = 0;
+	RenderingGeometryApplication::Vertex* vertices = new RenderingGeometryApplication::Vertex[sides * mirid];
+
+	for (int i = 0; i < mirid; i++)
+	{
+		float phi = 2.f * PI * ((float)i / (float)(mirid));
+		for (int j = 0; j < sides; j++, count++)
+		{
+			//float x = halfSphere[j].position.x * cos(phi) + halfSphere[j].position.z * sin(phi);
+			//float y = halfSphere[j].position.y;
+			//float z = halfSphere[j].position.z * -sin(phi) + halfSphere[j].position.x * cos(phi);
+
+			float x = halfSphere[j].position.x;
+			float y = halfSphere[j].position.y * cos(phi) - halfSphere[j].position.z * sin(phi);
+			float z = halfSphere[j].position.z * cos(phi) + halfSphere[j].position.y * sin(phi);
+
+
+			vertices[count].position = glm::vec4(x, y, z, 1);
+			vertices[count].colour = glm::vec4(1, 0, 0, 1);
+		}
+	}
+	return vertices;
+}
+
+unsigned int* RenderingGeometryApplication::generateSphereIndicies(const unsigned int &vertices, const unsigned int &mirid)
+{
+	unsigned int* indices = new unsigned int[2 * (vertices * (mirid + 1))];
+	m_indexCount = 2 * (vertices * (mirid + 1));
+
+	for (unsigned int i = 0; i < mirid; i++)
+	{
+		unsigned int beginning = i * vertices;
+		for (int j = 0; j < vertices; j++)
+		{
+			unsigned int botR = ((beginning + vertices + j) % (vertices * mirid));
+			unsigned int botL = ((beginning + j) % (vertices * mirid));
+			indicesHolder.push_back(botL);
+			indicesHolder.push_back(botR);
+		}
+		indicesHolder.push_back(0xFFFF);
+	}
+
+	for (int i = 0; i < indicesHolder.size(); i++) {
+		indices[i] = indicesHolder[i];
+	}
+	return indices;
+}
+
+bool RenderingGeometryApplication::Sphere(const unsigned int radius, const unsigned int verts, const unsigned int halfSpheres)
 {
 	createWindow("MakingASphere", 1280, 720);
 
 	m_camera = new Camera(glm::pi<float>() * 0.25f, 16 / 9.f, 0.1f, 1000.f);
 	m_camera->setLookAtFrom(vec3(10, 10, 10), vec3(0));
 
-	Vertex vertices[6];
+	const unsigned int size = (verts) * (halfSpheres);
 
-	vertices[0].position = vec4(-5, 0, -5, 1);
-	vertices[1].position = vec4(5, 0, -5, 1);
-	vertices[2].position = vec4(-5, 0, 5, 1);
-	vertices[3].position = vec4(5, 0, 5, 1);
-	vertices[4].position = vec4(-1, 0, 1, 1);
-	vertices[5].position = vec4(1, 0, 1, 1);
+	Vertex* vertices = new Vertex[size];
+	unsigned int* indices;
 
-	unsigned int indices[6] = { 0,2,1,3,5,4 };
-
-	m_indexCount = 6;
+	Vertex* halfSpheresVerts = generateHalfSphereVertices(verts, radius);
+	vertices = generateSphereVertices(verts, halfSpheres, halfSpheresVerts);
+	indices = generateSphereIndicies(verts, halfSpheres);
 
 	glGenBuffers(1, &m_vbo);
 	glGenBuffers(1, &m_ibo);
-
 	glGenVertexArrays(1, &m_vao);
-
 	glBindVertexArray(m_vao);
 
 	glBindBuffer(GL_ARRAY_BUFFER, m_vbo);
-	glBufferData(GL_ARRAY_BUFFER, 6 * sizeof(Vertex), vertices, GL_STATIC_DRAW);
-
+	glBufferData(GL_ARRAY_BUFFER, size * sizeof(Vertex), vertices, GL_STATIC_DRAW);
 	glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, m_ibo);
-	glBufferData(GL_ELEMENT_ARRAY_BUFFER, 6 * sizeof(unsigned int), indices, GL_STATIC_DRAW);
+	glBufferData(GL_ELEMENT_ARRAY_BUFFER, (m_indexCount * sizeof(unsigned int)), indices, GL_STATIC_DRAW);
 
-	glEnableVertexAttribArray(0);
-	glVertexAttribPointer(0, 4, GL_FLOAT, GL_FALSE, 0, (void*)0);
-
-	glEnableVertexAttribArray(1);
-	glVertexAttribPointer(1, 4, GL_FLOAT, GL_FALSE, 0, (void*)0);
+	glEnableVertexAttribArray(0);	
+	glVertexAttribPointer(0, 4, GL_FLOAT, GL_FALSE, sizeof(Vertex), 0);
+	glEnableVertexAttribArray(1);	
+	glVertexAttribPointer(1, 4, GL_FLOAT, GL_FALSE, sizeof(Vertex), 0);
 
 	glBindVertexArray(0);
 	glBindBuffer(GL_ARRAY_BUFFER, 0);
