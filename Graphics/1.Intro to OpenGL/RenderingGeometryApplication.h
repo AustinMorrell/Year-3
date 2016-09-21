@@ -19,19 +19,19 @@ using glm::mat4;
 // forward declared to reduce dependencies
 class Camera;
 
+struct Vertex {
+	glm::vec4 position;
+	glm::vec4 colour;
+};
+
 class RenderingGeometryApplication : public BaseApplication {
 public:
-	struct Vertex {
-		glm::vec4 position;
-		glm::vec4 colour;
-	};
-
 	RenderingGeometryApplication();
 	virtual ~RenderingGeometryApplication();
-	virtual Vertex* generateSphereVertices(const unsigned int &sides, const unsigned int &mirid, Vertex* &halfSphere);
-	virtual Vertex* generateHalfSphereVertices(unsigned int np, const int &rad);
-	virtual unsigned int* generateSphereIndicies(const unsigned int &vertices, const unsigned int &mirid);
-	virtual bool Sphere(const unsigned int radius, const unsigned int verts, const unsigned int halfSpheres);
+	virtual Vertex* genSphereVertices(const unsigned int &sides, const unsigned int &mirid, Vertex* &halfSphere);
+	virtual Vertex* genHalfSphereVertices(unsigned int np, const int &rad);
+	virtual unsigned int* genSphereIndicies(const unsigned int &vertices, const unsigned int &mirid);
+	virtual void Sphere(const unsigned int radius, const unsigned int verts, const unsigned int halfSpheres);
 	virtual void createCube();
 	virtual bool startup();
 	virtual void shutdown();

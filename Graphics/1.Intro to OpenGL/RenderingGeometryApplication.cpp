@@ -11,7 +11,7 @@ RenderingGeometryApplication::~RenderingGeometryApplication() {
 
 bool RenderingGeometryApplication::startup() {
 
-	Sphere(5, 30, 30);
+	Sphere(2, 30, 30);
 
 	// create shader
 	const char* vsSource = "#version 410\n \
@@ -102,57 +102,51 @@ void RenderingGeometryApplication::createCube()
 	glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, 0);
 }
 
-RenderingGeometryApplication::Vertex* RenderingGeometryApplication::generateHalfSphereVertices(unsigned int np, const int &rad)
+Vertex* RenderingGeometryApplication::genHalfSphereVertices(unsigned int np, const int &rad)
 {
-	RenderingGeometryApplication::Vertex* vertices = new RenderingGeometryApplication::Vertex[np];
+	Vertex* vertices = new Vertex[np];
 
 	for (int i = 0; i < np; i++)
 	{
 		float angle = PI * i / (np - 1);
-		//vertices[i].position = glm::vec4(rad * sin(angle), rad * cos(angle), 0, 1);
 		vertices[i].position = glm::vec4(rad * cos(angle), rad * sin(angle), 0, 1);
 	}
 	return vertices;
 }
 
-RenderingGeometryApplication::Vertex* RenderingGeometryApplication::generateSphereVertices(const unsigned int &sides, const unsigned int &mirid, Vertex* &halfSphere)
+Vertex* RenderingGeometryApplication::genSphereVertices(const unsigned int &sides, const unsigned int &mirid, Vertex* &halfSphere)
 {
 	int count = 0;
-	RenderingGeometryApplication::Vertex* vertices = new RenderingGeometryApplication::Vertex[sides * mirid];
+	Vertex* vertices = new Vertex[(sides) * (mirid)];
 
 	for (int i = 0; i < mirid; i++)
 	{
 		float phi = 2.f * PI * ((float)i / (float)(mirid));
 		for (int j = 0; j < sides; j++, count++)
 		{
-			//float x = halfSphere[j].position.x * cos(phi) + halfSphere[j].position.z * sin(phi);
-			//float y = halfSphere[j].position.y;
-			//float z = halfSphere[j].position.z * -sin(phi) + halfSphere[j].position.x * cos(phi);
-
 			float x = halfSphere[j].position.x;
 			float y = halfSphere[j].position.y * cos(phi) - halfSphere[j].position.z * sin(phi);
 			float z = halfSphere[j].position.z * cos(phi) + halfSphere[j].position.y * sin(phi);
 
-
 			vertices[count].position = glm::vec4(x, y, z, 1);
-			vertices[count].colour = glm::vec4(1, 0, 0, 1);
+			vertices[count].colour = glm::vec4(0, 0, .5, 1);
 		}
 	}
 	return vertices;
 }
 
-unsigned int* RenderingGeometryApplication::generateSphereIndicies(const unsigned int &vertices, const unsigned int &mirid)
+unsigned int* RenderingGeometryApplication::genSphereIndicies(const unsigned int &vertices, const unsigned int &mirid)
 {
-	unsigned int* indices = new unsigned int[2 * (vertices * (mirid + 1))];
+	unsigned int* index = new unsigned int[2 * (vertices * (mirid + 1))];
 	m_indexCount = 2 * (vertices * (mirid + 1));
 
 	for (unsigned int i = 0; i < mirid; i++)
 	{
-		unsigned int beginning = i * vertices;
+		unsigned int start = i * vertices;
 		for (int j = 0; j < vertices; j++)
 		{
-			unsigned int botR = ((beginning + vertices + j) % (vertices * mirid));
-			unsigned int botL = ((beginning + j) % (vertices * mirid));
+			unsigned int botR = ((start + vertices + j) % (vertices * mirid));
+			unsigned int botL = ((start + j) % (vertices * mirid));
 			indicesHolder.push_back(botL);
 			indicesHolder.push_back(botR);
 		}
@@ -160,26 +154,26 @@ unsigned int* RenderingGeometryApplication::generateSphereIndicies(const unsigne
 	}
 
 	for (int i = 0; i < indicesHolder.size(); i++) {
-		indices[i] = indicesHolder[i];
+		index[i] = indicesHolder[i];
 	}
-	return indices;
+	return index;
 }
 
-bool RenderingGeometryApplication::Sphere(const unsigned int radius, const unsigned int verts, const unsigned int halfSpheres)
+void RenderingGeometryApplication::Sphere(const unsigned int radius, const unsigned int verts, const unsigned int halfSpheres)
 {
 	createWindow("MakingASphere", 1280, 720);
 
 	m_camera = new Camera(glm::pi<float>() * 0.25f, 16 / 9.f, 0.1f, 1000.f);
-	m_camera->setLookAtFrom(vec3(10, 10, 10), vec3(0));
+	m_camera->setLookAtFrom(vec3(15, 15, 15), vec3(0, 1, 0));
 
 	const unsigned int size = (verts) * (halfSpheres);
 
 	Vertex* vertices = new Vertex[size];
 	unsigned int* indices;
 
-	Vertex* halfSpheresVerts = generateHalfSphereVertices(verts, radius);
-	vertices = generateSphereVertices(verts, halfSpheres, halfSpheresVerts);
-	indices = generateSphereIndicies(verts, halfSpheres);
+	Vertex* halfSpheresVerts = genHalfSphereVertices(verts, radius);
+	vertices = genSphereVertices(verts, halfSpheres, halfSpheresVerts);
+	indices = genSphereIndicies(verts, halfSpheres);
 
 	glGenBuffers(1, &m_vbo);
 	glGenBuffers(1, &m_ibo);
@@ -200,7 +194,6 @@ bool RenderingGeometryApplication::Sphere(const unsigned int radius, const unsig
 	glBindBuffer(GL_ARRAY_BUFFER, 0);
 	glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, 0);
 
-	return true;
 }
 
 void RenderingGeometryApplication::shutdown() {
